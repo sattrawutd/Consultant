@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Project Report — Data Editor</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f4f6f9;
+    --card: #ffffff;
+    --border: #e2e8f0;
+    --text: #1a1e2c;
+    --text2: #4a5568;
+    --muted: #8896a6;
+    --green: #16a367;
+    --yellow: #d97706;
+    --red: #dc2626;
+    --blue: #2563eb;
+    --radius: 14px;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'DM Sans','Noto Sans Thai',sans-serif; background:var(--bg); color:var(--text); line-height:1.6; min-height:100vh; }
+
+  .editor-wrapper { max-width:920px; margin:0 auto; padding:40px 24px 80px; }
+
+  .editor-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:36px; padding-bottom:24px; border-bottom:1px solid var(--border); }
+  .editor-header h1 { font-size:1.6rem; font-weight:700; }
+  .editor-header .actions { display:flex; gap:10px; }
+
+  .btn { padding:10px 24px; border-radius:10px; border:none; font-size:0.88rem; font-weight:600; cursor:pointer; transition:all 0.15s; font-family:inherit; }
+  .btn-primary { background:var(--blue); color:#fff; }
+  .btn-primary:hover { background:#1d4ed8; }
+  .btn-secondary { background:var(--card); color:var(--text); border:1px solid var(--border); }
+  .btn-secondary:hover { background:#f0f2f5; }
+  .btn-success { background:var(--green); color:#fff; }
+  .btn-success:hover { background:#12854f; }
+
+  .section { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:28px; margin-bottom:24px; }
+  .section-title { font-size:1rem; font-weight:700; margin-bottom:20px; display:flex; align-items:center; gap:10px; color:var(--text); }
+  .section-title .badge { font-size:0.7rem; background:var(--blue); color:#fff; padding:3px 10px; border-radius:100px; }
+
+  .form-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+  .form-grid.cols-3 { grid-template-columns:1fr 1fr 1fr; }
+  .form-group { display:flex; flex-direction:column; gap:6px; }
+  .form-group.full { grid-column:1/-1; }
+  .form-group label { font-size:0.78rem; font-weight:600; color:var(--muted); text-transform:uppercase; letter-spacing:0.05em; }
+  .form-group input, .form-group select, .form-group textarea {
+    font-family:inherit; font-size:0.9rem; padding:10px 14px; border:1px solid var(--border);
+    border-radius:8px; background:#fff; color:var(--text); transition:border 0.15s;
+  }
+  .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+    outline:none; border-color:var(--blue); box-shadow:0 0 0 3px rgba(37,99,235,0.1);
+  }
+  .form-group textarea { resize:vertical; min-height:80px; }
+  .form-group select { cursor:pointer; }
+
+  /* Health selector */
+  .health-selector { display:flex; gap:8px; }
+  .health-opt { flex:1; text-align:center; padding:10px 8px; border-radius:8px; border:2px solid var(--border); cursor:pointer; font-size:0.82rem; font-weight:600; transition:all 0.15s; }
+  .health-opt:hover { background:#f8f9fb; }
+  .health-opt.active-green { border-color:var(--green); background:rgba(22,163,103,0.08); color:var(--green); }
+  .health-opt.active-yellow { border-color:var(--yellow); background:rgba(217,119,6,0.08); color:var(--yellow); }
+  .health-opt.active-red { border-color:var(--red); background:rgba(220,38,38,0.08); color:var(--red); }
+
+  /* Dynamic list */
+  .list-items { display:flex; flex-direction:column; gap:8px; }
+  .list-row { display:flex; gap:8px; align-items:center; }
+  .list-row input { flex:1; }
+  .list-row .btn-remove { width:36px; height:36px; border-radius:8px; border:1px solid var(--border); background:#fff; color:var(--red); font-size:1.1rem; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all 0.15s; flex-shrink:0; }
+  .list-row .btn-remove:hover { background:rgba(220,38,38,0.08); }
+  .btn-add { font-size:0.82rem; padding:8px 16px; border-radius:8px; border:1px dashed var(--border); background:transparent; color:var(--blue); cursor:pointer; font-weight:600; transition:all 0.15s; font-family:inherit; margin-top:4px; }
+  .btn-add:hover { background:rgba(37,99,235,0.06); border-color:var(--blue); }
+
+  /* Milestone editor */
+  .milestone-editor-row { display:grid; grid-template-columns:1fr 140px 80px; gap:10px; align-items:center; margin-bottom:8px; }
+  .milestone-editor-row input { font-family:inherit; font-size:0.88rem; padding:8px 12px; border:1px solid var(--border); border-radius:8px; }
+
+  /* Risk editor */
+  .risk-editor-card { border:1px solid var(--border); border-radius:10px; padding:16px; margin-bottom:12px; }
+  .risk-editor-card .risk-row { display:grid; grid-template-columns:1fr 120px; gap:10px; margin-bottom:10px; }
+
+  /* Status table editor */
+  .status-editor-row { display:grid; grid-template-columns:120px 100px 1fr 36px; gap:10px; align-items:start; margin-bottom:8px; }
+
+  /* Toast */
+  .toast { position:fixed; bottom:32px; right:32px; background:var(--green); color:#fff; padding:14px 28px; border-radius:12px; font-weight:600; font-size:0.9rem; transform:translateY(100px); opacity:0; transition:all 0.3s; z-index:100; box-shadow:0 4px 16px rgba(0,0,0,0.15); }
+  .toast.show { transform:translateY(0); opacity:1; }
+
+  .link-bar { margin-top:16px; text-align:center; }
+  .link-bar a { color:var(--blue); text-decoration:none; font-weight:600; font-size:0.88rem; }
+  .link-bar a:hover { text-decoration:underline; }
+
+  @media(max-width:700px) {
+    .form-grid, .form-grid.cols-3 { grid-template-columns:1fr; }
+    .milestone-editor-row { grid-template-columns:1fr; }
+    .status-editor-row { grid-template-columns:1fr; }
+    .risk-editor-card .risk-row { grid-template-columns:1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="editor-wrapper">
+
+  <div class="editor-header">
+    <h1>Project Report — Data Editor</h1>
+    <div class="actions">
+      <button class="btn btn-secondary" onclick="loadData()">Reset</button>
+      <button class="btn btn-primary" onclick="saveData()">Save &amp; Apply</button>
+      <button class="btn btn-success" onclick="saveAndView()">Save &amp; View Report</button>
+    </div>
+  </div>
+
+  <!-- ═══ HEADER INFO ═══ -->
+  <div class="section">
+    <div class="section-title">Report Information <span class="badge">Header</span></div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Report Number</label>
+        <input type="text" id="reportNumber" placeholder="e.g. Report #23">
+      </div>
+      <div class="form-group">
+        <label>Report Date</label>
+        <input type="text" id="reportDate" placeholder="e.g. 2 December 2025">
+      </div>
+      <div class="form-group full">
+        <label>Project Title / Subtitle</label>
+        <input type="text" id="projectSubtitle" placeholder="e.g. ABACUS — Oracle NetSuite Implementation">
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ PROGRESS ═══ -->
+  <div class="section">
+    <div class="section-title">Overall Progress <span class="badge">Ring</span></div>
+    <div class="form-grid cols-3">
+      <div class="form-group">
+        <label>Current Progress (%)</label>
+        <input type="number" id="progressCurrent" min="0" max="100" placeholder="85">
+      </div>
+      <div class="form-group">
+        <label>Previous Progress (%)</label>
+        <input type="number" id="progressPrevious" min="0" max="100" placeholder="85">
+      </div>
+      <div class="form-group">
+        <label>Go-Live Date</label>
+        <input type="date" id="goLiveDate">
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ HEALTH INDICATORS ═══ -->
+  <div class="section">
+    <div class="section-title">Project Health Indicators <span class="badge">6 Items</span></div>
+    <div id="healthEditors"></div>
+  </div>
+
+  <!-- ═══ ACCOMPLISHMENTS ═══ -->
+  <div class="section">
+    <div class="section-title">Accomplishments (สิ่งที่ทำสำเร็จ)</div>
+    <div class="list-items" id="accomplishmentsList"></div>
+    <button class="btn-add" onclick="addListItem('accomplishmentsList')">+ Add item</button>
+  </div>
+
+  <!-- ═══ NEXT WEEK PLAN ═══ -->
+  <div class="section">
+    <div class="section-title">Next Week Plan (แผนสัปดาห์ถัดไป)</div>
+    <div class="list-items" id="plansList"></div>
+    <button class="btn-add" onclick="addPlanItem()">+ Add item</button>
+  </div>
+
+  <!-- ═══ MILESTONES ═══ -->
+  <div class="section">
+    <div class="section-title">Key Milestones</div>
+    <div id="milestoneEditor"></div>
+    <button class="btn-add" onclick="addMilestone()">+ Add milestone</button>
+  </div>
+
+  <!-- ═══ STATUS SUMMARY ═══ -->
+  <div class="section">
+    <div class="section-title">Status Summary</div>
+    <div id="statusEditor"></div>
+    <button class="btn-add" onclick="addStatusRow()">+ Add area</button>
+  </div>
+
+  <!-- ═══ KEY RISKS ═══ -->
+  <div class="section">
+    <div class="section-title">Key Risks &amp; Issues</div>
+    <div id="risksEditor"></div>
+    <button class="btn-add" onclick="addRisk()">+ Add risk</button>
+  </div>
+
+  <div class="link-bar">
+    <a href="Progess_Project.html">← View Report Page</a>
+  </div>
+
+</div>
+
+<div class="toast" id="toast">Saved successfully!</div>
+
+<script>
+  // ════════════ DEFAULT DATA ════════════
+  const DEFAULT_DATA = {
+    reportNumber: 'Report #23',
+    reportDate: '2 December 2025',
+    projectSubtitle: 'ABACUS — Oracle NetSuite Implementation',
+    progressCurrent: 85,
+    progressPrevious: 85,
+    goLiveDate: '2026-01-07',
+    health: {
+      overallHealth:  { label:'Overall Health', level:'yellow', status:'Needs attention' },
+      stakeholder:    { label:'Stakeholder',    level:'green',  status:'On track' },
+      scope:          { label:'Scope',          level:'yellow', status:'Needs attention' },
+      schedule:       { label:'Schedule',       level:'yellow', status:'Needs attention' },
+      resource:       { label:'Resource',       level:'green',  status:'On track' },
+      issues:         { label:'Issues',         level:'yellow', status:'Needs attention' }
+    },
+    accomplishments: [
+      'UAT Cycle #1 completed — 916 test cases executed',
+      'UAT Cycle #2 completed — 644 test cases',
+      'Deployment Strategy & Runbook drafted and under review',
+      'All SIT defects closed and verified'
+    ],
+    plans: [
+      { text:'UAT Cycle #3', date:'03–04 Dec' },
+      { text:'User Manuals finalization', date:'01 Nov – 04 Dec' },
+      { text:'Deployment Strategy sign-off', date:'27 Oct – 24 Nov' },
+      { text:'Training sessions kick-off', date:'09–15 Dec' },
+      { text:'PRD Deployment preparation', date:'16–23 Dec' }
+    ],
+    milestones: [
+      { name:'Test Strategy', target:'Target: 19-Aug', pct:100, phase:'enable' },
+      { name:'SIT Preparation', target:'Target: 06-Oct', pct:100, phase:'enable' },
+      { name:'System Integration Test (SIT)', target:'Target: 07–31 Oct', pct:100, phase:'enable' },
+      { name:'UAT Preparation', target:'Target: 04-Nov', pct:100, phase:'enable' },
+      { name:'User Acceptance Test (UAT)', target:'Target: 06 Nov – 02 Dec', pct:70, phase:'enable' },
+      { name:'Trainings', target:'Target: 03 Dec – 19 Dec', pct:33, phase:'enable' },
+      { name:'Deployment Strategy & Runbook', target:'Planned: 27 Oct – 24 Nov', pct:46, phase:'convert' },
+      { name:'PRD Deployment & Shakedown Test', target:'Target: 03–19 Dec', pct:0, phase:'convert' },
+      { name:'Production Support Plan', target:'Target: 01–08 Dec', pct:0, phase:'convert' },
+      { name:'System Go-Live', target:'Target: 07-Jan-2026', pct:0, phase:'golive' }
+    ],
+    statusSummary: [
+      { area:'Stakeholder', status:'green', detail:'Fully committed. All key stakeholders actively participating in UAT review sessions.' },
+      { area:'Scope', status:'yellow', detail:'Customized Reports confirmed: 7 reports. Remaining 3 reports to be decided after Go-Live.' },
+      { area:'Schedule', status:'yellow', detail:'UAT extended 1 additional week to ensure all defects closed. Training & Deployment rescheduled accordingly.' },
+      { area:'Resource', status:'green', detail:'High performing team of both ABACUS and SLD. 11–15 UAT testers assigned.' },
+      { area:'Issues', status:'yellow', detail:'Need improvement on quality of defect fixing. Recurring defects identified in financial module.' }
+    ],
+    risks: [
+      { title:'Defect Quality', severity:'high', desc:'Recurring defects in financial module after fixes applied. Root cause analysis needed.', mitigation:'Implement peer code review before deploying fixes. Add regression test suite.' },
+      { title:'Schedule Compression', severity:'high', desc:'UAT extension pushes Training & Deployment windows. Go-Live date at risk if further delays occur.', mitigation:'Parallel track training preparation. Standby weekend deployment plan.' },
+      { title:'Pending Report Decisions', severity:'medium', desc:'3 customized reports deferred to post Go-Live. Users may require these for daily operations.', mitigation:'Provide workaround using standard reports. Prioritize post Go-Live sprint.' },
+      { title:'Training Readiness', severity:'medium', desc:'Training materials only 33% complete. Compressed window may affect user adoption quality.', mitigation:'Focus on role-based quick-start guides. Record video walkthroughs for async learning.' }
+    ]
+  };
+
+  // ════════════ HEALTH EDITORS ════════════
+  const healthKeys = ['overallHealth','stakeholder','scope','schedule','resource','issues'];
+
+  function renderHealthEditors(data) {
+    const c = document.getElementById('healthEditors');
+    c.innerHTML = '';
+    healthKeys.forEach(key => {
+      const h = data.health[key];
+      const div = document.createElement('div');
+      div.style.cssText = 'display:grid;grid-template-columns:140px 1fr 1fr;gap:12px;align-items:center;margin-bottom:12px;';
+      div.innerHTML = `
+        <div style="font-weight:600;font-size:0.88rem;">${h.label}</div>
+        <div class="health-selector">
+          <div class="health-opt ${h.level==='green'?'active-green':''}" data-key="${key}" data-level="green" onclick="setHealth(this)">On Track</div>
+          <div class="health-opt ${h.level==='yellow'?'active-yellow':''}" data-key="${key}" data-level="yellow" onclick="setHealth(this)">At Risk</div>
+          <div class="health-opt ${h.level==='red'?'active-red':''}" data-key="${key}" data-level="red" onclick="setHealth(this)">Critical</div>
+        </div>
+        <input type="text" class="health-status-input" data-key="${key}" value="${h.status}" placeholder="Status text" style="font-family:inherit;font-size:0.88rem;padding:8px 12px;border:1px solid var(--border);border-radius:8px;">
+      `;
+      c.appendChild(div);
+    });
+  }
+
+  function setHealth(el) {
+    const key = el.dataset.key;
+    const level = el.dataset.level;
+    const siblings = el.parentElement.children;
+    for(let s of siblings) s.className = 'health-opt';
+    el.className = 'health-opt active-' + level;
+  }
+
+  // ════════════ LIST (Accomplishments) ════════════
+  function renderList(containerId, items) {
+    const c = document.getElementById(containerId);
+    c.innerHTML = '';
+    items.forEach((item, i) => {
+      const row = document.createElement('div');
+      row.className = 'list-row';
+      row.innerHTML = `<input type="text" value="${escHtml(item)}" placeholder="Item description"><button class="btn-remove" onclick="this.parentElement.remove()">×</button>`;
+      c.appendChild(row);
+    });
+  }
+
+  function addListItem(containerId) {
+    const c = document.getElementById(containerId);
+    const row = document.createElement('div');
+    row.className = 'list-row';
+    row.innerHTML = `<input type="text" value="" placeholder="Item description"><button class="btn-remove" onclick="this.parentElement.remove()">×</button>`;
+    c.appendChild(row);
+    row.querySelector('input').focus();
+  }
+
+  // ════════════ PLANS (text + date) ════════════
+  function renderPlans(items) {
+    const c = document.getElementById('plansList');
+    c.innerHTML = '';
+    items.forEach(item => {
+      const row = document.createElement('div');
+      row.className = 'list-row';
+      row.innerHTML = `<input type="text" value="${escHtml(item.text)}" placeholder="Task" style="flex:2"><input type="text" value="${escHtml(item.date)}" placeholder="Date range" style="flex:1"><button class="btn-remove" onclick="this.parentElement.remove()">×</button>`;
+      c.appendChild(row);
+    });
+  }
+
+  function addPlanItem() {
+    const c = document.getElementById('plansList');
+    const row = document.createElement('div');
+    row.className = 'list-row';
+    row.innerHTML = `<input type="text" value="" placeholder="Task" style="flex:2"><input type="text" value="" placeholder="Date range" style="flex:1"><button class="btn-remove" onclick="this.parentElement.remove()">×</button>`;
+    c.appendChild(row);
+    row.querySelector('input').focus();
+  }
+
+  // ════════════ MILESTONES ════════════
+  function renderMilestones(items) {
+    const c = document.getElementById('milestoneEditor');
+    c.innerHTML = '';
+    items.forEach(m => {
+      const row = document.createElement('div');
+      row.className = 'milestone-editor-row';
+      row.innerHTML = `
+        <input type="text" value="${escHtml(m.name)}" placeholder="Milestone name" data-field="name">
+        <input type="text" value="${escHtml(m.target)}" placeholder="Target date" data-field="target">
+        <div style="display:flex;gap:6px;align-items:center;">
+          <input type="number" value="${m.pct}" min="0" max="100" style="width:60px" data-field="pct">
+          <select data-field="phase" style="font-family:inherit;font-size:0.82rem;padding:6px;border:1px solid var(--border);border-radius:6px;">
+            <option value="enable" ${m.phase==='enable'?'selected':''}>Enable</option>
+            <option value="convert" ${m.phase==='convert'?'selected':''}>Convert</option>
+            <option value="golive" ${m.phase==='golive'?'selected':''}>Go-Live</option>
+          </select>
+          <button class="btn-remove" onclick="this.closest('.milestone-editor-row').remove()" style="width:28px;height:28px;font-size:0.9rem;">×</button>
+        </div>`;
+      c.appendChild(row);
+    });
+  }
+
+  function addMilestone() {
+    const c = document.getElementById('milestoneEditor');
+    const row = document.createElement('div');
+    row.className = 'milestone-editor-row';
+    row.innerHTML = `
+      <input type="text" value="" placeholder="Milestone name" data-field="name">
+      <input type="text" value="" placeholder="Target date" data-field="target">
+      <div style="display:flex;gap:6px;align-items:center;">
+        <input type="number" value="0" min="0" max="100" style="width:60px" data-field="pct">
+        <select data-field="phase" style="font-family:inherit;font-size:0.82rem;padding:6px;border:1px solid var(--border);border-radius:6px;">
+          <option value="enable">Enable</option>
+          <option value="convert">Convert</option>
+          <option value="golive">Go-Live</option>
+        </select>
+        <button class="btn-remove" onclick="this.closest('.milestone-editor-row').remove()" style="width:28px;height:28px;font-size:0.9rem;">×</button>
+      </div>`;
+    c.appendChild(row);
+    row.querySelector('input').focus();
+  }
+
+  // ════════════ STATUS SUMMARY ════════════
+  function renderStatus(items) {
+    const c = document.getElementById('statusEditor');
+    c.innerHTML = '';
+    items.forEach(s => {
+      const row = document.createElement('div');
+      row.className = 'status-editor-row';
+      row.innerHTML = `
+        <input type="text" value="${escHtml(s.area)}" placeholder="Area" style="font-family:inherit;font-size:0.88rem;padding:8px;border:1px solid var(--border);border-radius:8px;">
+        <select style="font-family:inherit;font-size:0.88rem;padding:8px;border:1px solid var(--border);border-radius:8px;">
+          <option value="green" ${s.status==='green'?'selected':''}>Good</option>
+          <option value="yellow" ${s.status==='yellow'?'selected':''}>At Risk</option>
+          <option value="red" ${s.status==='red'?'selected':''}>Critical</option>
+        </select>
+        <textarea placeholder="Details" style="font-family:inherit;font-size:0.85rem;padding:8px;border:1px solid var(--border);border-radius:8px;min-height:40px;">${escHtml(s.detail)}</textarea>
+        <button class="btn-remove" onclick="this.closest('.status-editor-row').remove()" style="margin-top:4px;">×</button>`;
+      c.appendChild(row);
+    });
+  }
+
+  function addStatusRow() {
+    const c = document.getElementById('statusEditor');
+    const row = document.createElement('div');
+    row.className = 'status-editor-row';
+    row.innerHTML = `
+      <input type="text" value="" placeholder="Area" style="font-family:inherit;font-size:0.88rem;padding:8px;border:1px solid var(--border);border-radius:8px;">
+      <select style="font-family:inherit;font-size:0.88rem;padding:8px;border:1px solid var(--border);border-radius:8px;">
+        <option value="green">Good</option><option value="yellow">At Risk</option><option value="red">Critical</option>
+      </select>
+      <textarea placeholder="Details" style="font-family:inherit;font-size:0.85rem;padding:8px;border:1px solid var(--border);border-radius:8px;min-height:40px;"></textarea>
+      <button class="btn-remove" onclick="this.closest('.status-editor-row').remove()" style="margin-top:4px;">×</button>`;
+    c.appendChild(row);
+    row.querySelector('input').focus();
+  }
+
+  // ════════════ RISKS ════════════
+  function renderRisks(items) {
+    const c = document.getElementById('risksEditor');
+    c.innerHTML = '';
+    items.forEach(r => {
+      const card = document.createElement('div');
+      card.className = 'risk-editor-card';
+      card.innerHTML = `
+        <div class="risk-row">
+          <input type="text" value="${escHtml(r.title)}" placeholder="Risk title" data-field="title" style="font-family:inherit;font-size:0.88rem;padding:8px;border:1px solid var(--border);border-radius:8px;">
+          <select data-field="severity" style="font-family:inherit;font-size:0.88rem;padding:8px;border:1px solid var(--border);border-radius:8px;">
+            <option value="high" ${r.severity==='high'?'selected':''}>High</option>
+            <option value="medium" ${r.severity==='medium'?'selected':''}>Medium</option>
+            <option value="low" ${r.severity==='low'?'selected':''}>Low</option>
+          </select>
+        </div>
+        <textarea placeholder="Description" data-field="desc" style="width:100%;font-family:inherit;font-size:0.85rem;padding:8px;border:1px solid var(--border);border-radius:8px;min-height:50px;margin-bottom:8px;">${escHtml(r.desc)}</textarea>
+        <textarea placeholder="Mitigation" data-field="mitigation" style="width:100%;font-family:inherit;font-size:0.85rem;padding:8px;border:1px solid var(--border);border-radius:8px;min-height:50px;">${escHtml(r.mitigation)}</textarea>
+        <button class="btn-remove" onclick="this.closest('.risk-editor-card').remove()" style="margin-top:8px;width:100%;text-align:center;">Remove Risk</button>
+      `;
+      c.appendChild(card);
+    });
+  }
+
+  function addRisk() {
+    const c = document.getElementById('risksEditor');
+    const card = document.createElement('div');
+    card.className = 'risk-editor-card';
+    card.innerHTML = `
+      <div class="risk-row">
+        <input type="text" value="" placeholder="Risk title" data-field="title" style="font-family:inherit;font-size:0.88rem;padding:8px;border:1px solid var(--border);border-radius:8px;">
+        <select data-field="severity" style="font-family:inherit;font-size:0.88rem;padding:8px;border:1px solid var(--border);border-radius:8px;">
+          <option value="high">High</option><option value="medium">Medium</option><option value="low">Low</option>
+        </select>
+      </div>
+      <textarea placeholder="Description" data-field="desc" style="width:100%;font-family:inherit;font-size:0.85rem;padding:8px;border:1px solid var(--border);border-radius:8px;min-height:50px;margin-bottom:8px;"></textarea>
+      <textarea placeholder="Mitigation" data-field="mitigation" style="width:100%;font-family:inherit;font-size:0.85rem;padding:8px;border:1px solid var(--border);border-radius:8px;min-height:50px;"></textarea>
+      <button class="btn-remove" onclick="this.closest('.risk-editor-card').remove()" style="margin-top:8px;width:100%;text-align:center;">Remove Risk</button>
+    `;
+    c.appendChild(card);
+    card.querySelector('input').focus();
+  }
+
+  // ════════════ COLLECT DATA ════════════
+  function collectData() {
+    const data = {};
+    data.reportNumber = document.getElementById('reportNumber').value;
+    data.reportDate = document.getElementById('reportDate').value;
+    data.projectSubtitle = document.getElementById('projectSubtitle').value;
+    data.progressCurrent = parseInt(document.getElementById('progressCurrent').value) || 0;
+    data.progressPrevious = parseInt(document.getElementById('progressPrevious').value) || 0;
+    data.goLiveDate = document.getElementById('goLiveDate').value;
+
+    // Health
+    data.health = {};
+    healthKeys.forEach(key => {
+      const activeOpt = document.querySelector(`.health-opt[data-key="${key}"][class*="active-"]`);
+      const statusInput = document.querySelector(`.health-status-input[data-key="${key}"]`);
+      let level = 'yellow';
+      if(activeOpt) {
+        if(activeOpt.classList.contains('active-green')) level = 'green';
+        else if(activeOpt.classList.contains('active-red')) level = 'red';
+        else level = 'yellow';
+      }
+      const label = DEFAULT_DATA.health[key].label;
+      data.health[key] = { label, level, status: statusInput ? statusInput.value : '' };
+    });
+
+    // Accomplishments
+    data.accomplishments = [];
+    document.querySelectorAll('#accomplishmentsList .list-row input').forEach(inp => {
+      if(inp.value.trim()) data.accomplishments.push(inp.value.trim());
+    });
+
+    // Plans
+    data.plans = [];
+    document.querySelectorAll('#plansList .list-row').forEach(row => {
+      const inputs = row.querySelectorAll('input');
+      if(inputs[0].value.trim()) data.plans.push({ text:inputs[0].value.trim(), date:inputs[1]?inputs[1].value.trim():'' });
+    });
+
+    // Milestones
+    data.milestones = [];
+    document.querySelectorAll('#milestoneEditor .milestone-editor-row').forEach(row => {
+      const name = row.querySelector('[data-field="name"]').value.trim();
+      const target = row.querySelector('[data-field="target"]').value.trim();
+      const pct = parseInt(row.querySelector('[data-field="pct"]').value) || 0;
+      const phase = row.querySelector('[data-field="phase"]').value;
+      if(name) data.milestones.push({ name, target, pct, phase });
+    });
+
+    // Status
+    data.statusSummary = [];
+    document.querySelectorAll('#statusEditor .status-editor-row').forEach(row => {
+      const area = row.querySelector('input').value.trim();
+      const status = row.querySelector('select').value;
+      const detail = row.querySelector('textarea').value.trim();
+      if(area) data.statusSummary.push({ area, status, detail });
+    });
+
+    // Risks
+    data.risks = [];
+    document.querySelectorAll('#risksEditor .risk-editor-card').forEach(card => {
+      const title = card.querySelector('[data-field="title"]').value.trim();
+      const severity = card.querySelector('[data-field="severity"]').value;
+      const desc = card.querySelector('[data-field="desc"]').value.trim();
+      const mitigation = card.querySelector('[data-field="mitigation"]').value.trim();
+      if(title) data.risks.push({ title, severity, desc, mitigation });
+    });
+
+    return data;
+  }
+
+  // ════════════ SAVE / LOAD ════════════
+  function saveData() {
+    const data = collectData();
+    localStorage.setItem('projectReportData', JSON.stringify(data));
+    showToast('Saved successfully!');
+  }
+
+  function saveAndView() {
+    saveData();
+    window.location.href = 'Progess_Project.html';
+  }
+
+  function loadData() {
+    let data;
+    try {
+      const stored = localStorage.getItem('projectReportData');
+      data = stored ? JSON.parse(stored) : DEFAULT_DATA;
+    } catch(e) {
+      data = DEFAULT_DATA;
+    }
+
+    document.getElementById('reportNumber').value = data.reportNumber || '';
+    document.getElementById('reportDate').value = data.reportDate || '';
+    document.getElementById('projectSubtitle').value = data.projectSubtitle || '';
+    document.getElementById('progressCurrent').value = data.progressCurrent || 0;
+    document.getElementById('progressPrevious').value = data.progressPrevious || 0;
+    document.getElementById('goLiveDate').value = data.goLiveDate || '';
+
+    renderHealthEditors(data);
+    renderList('accomplishmentsList', data.accomplishments || []);
+    renderPlans(data.plans || []);
+    renderMilestones(data.milestones || []);
+    renderStatus(data.statusSummary || []);
+    renderRisks(data.risks || []);
+  }
+
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2500);
+  }
+
+  function escHtml(s) {
+    return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  // ════════════ INIT ════════════
+  loadData();
+</script>
+</body>
+</html>

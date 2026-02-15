@@ -1,0 +1,1521 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Project Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Instrument+Serif:ital@0;1&family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<style>
+  :root {
+    --bg-primary: #f4f6f9;
+    --bg-card: #ffffff;
+    --bg-card-hover: #f0f2f5;
+    --bg-elevated: #edf0f4;
+    --border: rgba(0,0,0,0.08);
+    --border-accent: rgba(0,0,0,0.12);
+    --text-primary: #1a1e2c;
+    --text-secondary: #4a5568;
+    --text-muted: #8896a6;
+    --accent-green: #16a367;
+    --accent-green-dim: rgba(22,163,103,0.10);
+    --accent-yellow: #d97706;
+    --accent-yellow-dim: rgba(217,119,6,0.10);
+    --accent-red: #dc2626;
+    --accent-red-dim: rgba(220,38,38,0.08);
+    --accent-blue: #2563eb;
+    --accent-blue-dim: rgba(37,99,235,0.08);
+    --accent-purple: #7c3aed;
+    --accent-purple-dim: rgba(124,58,237,0.08);
+    --accent-cyan: #0891b2;
+    --accent-cyan-dim: rgba(8,145,178,0.08);
+    --radius: 16px;
+    --radius-sm: 10px;
+    --radius-xs: 6px;
+    --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.06);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'DM Sans', 'Noto Sans Thai', sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* Background subtle texture */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.015'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .page-wrapper {
+    position: relative;
+    z-index: 1;
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 40px 32px 80px;
+  }
+
+  /* ── Header ── */
+  .report-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 48px;
+    padding-bottom: 32px;
+    border-bottom: 1px solid var(--border);
+    animation: fadeDown 0.6s ease-out;
+  }
+
+  .report-header .left h1 {
+    font-family: 'Instrument Serif', serif;
+    font-size: 2.4rem;
+    font-weight: 400;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+    color: var(--text-primary);
+  }
+
+  .report-header .left .subtitle {
+    margin-top: 8px;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    font-weight: 400;
+  }
+
+  .report-header .right {
+    text-align: right;
+    flex-shrink: 0;
+  }
+
+  .report-header .right .report-number {
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent-cyan);
+    background: var(--accent-cyan-dim);
+    padding: 6px 14px;
+    border-radius: 100px;
+    display: inline-block;
+  }
+
+  .report-header .right .date {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    margin-top: 10px;
+  }
+
+  /* ── Progress Ring & Health ── */
+  .overview-grid {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 24px;
+    margin-bottom: 32px;
+    animation: fadeUp 0.6s ease-out 0.1s both;
+  }
+
+  .progress-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 32px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    box-shadow: var(--shadow);
+  }
+
+  .progress-card .label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 20px;
+  }
+
+  .progress-ring-wrapper {
+    position: relative;
+    width: 140px;
+    height: 140px;
+  }
+
+  .progress-ring-wrapper svg {
+    transform: rotate(-90deg);
+    width: 140px;
+    height: 140px;
+  }
+
+  .progress-ring-bg {
+    fill: none;
+    stroke: #e2e8f0;
+    stroke-width: 10;
+  }
+
+  .progress-ring-fill {
+    fill: none;
+    stroke: url(#progressGradient);
+    stroke-width: 10;
+    stroke-linecap: round;
+    stroke-dasharray: 408;
+    stroke-dashoffset: 408;
+    transition: stroke-dashoffset 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .progress-ring-wrapper .center-text {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .center-text .percentage {
+    font-family: 'Instrument Serif', serif;
+    font-size: 2.6rem;
+    line-height: 1;
+    color: var(--text-primary);
+  }
+
+  .center-text .pct-label {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    margin-top: 2px;
+  }
+
+  .progress-change {
+    margin-top: 16px;
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .progress-change .arrow-up { color: var(--accent-green); }
+  .progress-change .arrow-same { color: var(--accent-yellow); }
+
+  /* Health indicators */
+  .health-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px 32px;
+    box-shadow: var(--shadow);
+  }
+
+  .health-card .section-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 20px;
+  }
+
+  .health-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
+
+  .health-item {
+    border-radius: var(--radius-sm);
+    padding: 16px 18px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    transition: all 0.2s;
+    border: 1.5px solid var(--border);
+    background: var(--bg-card);
+  }
+
+  .health-item.green {
+    border-color: var(--accent-green);
+    background: rgba(22,163,103,0.05);
+  }
+  .health-item.yellow {
+    border-color: var(--accent-yellow);
+    background: rgba(217,119,6,0.05);
+  }
+  .health-item.red {
+    border-color: var(--accent-red);
+    background: rgba(220,38,38,0.05);
+  }
+
+  .health-item:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+
+  .health-dot {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  .health-dot.green { background: var(--accent-green); color: #fff; }
+  .health-dot.yellow { background: var(--accent-yellow); color: #fff; }
+  .health-dot.red { background: var(--accent-red); color: #fff; }
+
+  .health-info .health-name {
+    font-size: 0.82rem;
+    font-weight: 500;
+    color: var(--text-primary);
+  }
+
+  .health-info .health-status {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    margin-top: 1px;
+  }
+
+  /* ── Section ── */
+  .section {
+    margin-bottom: 32px;
+    animation: fadeUp 0.6s ease-out both;
+  }
+
+  .section:nth-child(3) { animation-delay: 0.15s; }
+  .section:nth-child(4) { animation-delay: 0.2s; }
+  .section:nth-child(5) { animation-delay: 0.25s; }
+  .section:nth-child(6) { animation-delay: 0.3s; }
+
+  .section-title {
+    font-family: 'Instrument Serif', serif;
+    font-size: 1.4rem;
+    font-weight: 400;
+    margin-bottom: 18px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .section-title .icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+  }
+
+  /* ── Accomplishment & Plan ── */
+  .twin-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+
+  .twin-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px;
+    box-shadow: var(--shadow);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .twin-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+  }
+
+  .twin-card.accomplished::before {
+    background: linear-gradient(90deg, #16a367, #0891b2);
+  }
+
+  .twin-card.planned::before {
+    background: linear-gradient(90deg, #2563eb, #7c3aed);
+  }
+
+  .twin-card .card-header {
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .twin-card.accomplished .card-header { color: var(--accent-green); }
+  .twin-card.planned .card-header { color: var(--accent-blue); }
+
+  .twin-card ul {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .twin-card li {
+    font-size: 0.88rem;
+    color: var(--text-secondary);
+    padding-left: 18px;
+    position: relative;
+    line-height: 1.5;
+  }
+
+  .twin-card li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 8px;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+  }
+
+  .twin-card.accomplished li::before { background: var(--accent-green); }
+  .twin-card.planned li::before { background: var(--accent-blue); }
+
+  .twin-card li .date-tag {
+    font-size: 0.72rem;
+    padding: 2px 8px;
+    border-radius: 4px;
+    margin-left: 6px;
+    font-weight: 500;
+  }
+
+  .twin-card.planned li .date-tag {
+    background: var(--accent-blue-dim);
+    color: var(--accent-blue);
+  }
+
+  /* ── Milestones ── */
+  .milestone-container {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px;
+    box-shadow: var(--shadow);
+  }
+
+  .milestone-phase {
+    margin-bottom: 28px;
+  }
+
+  .milestone-phase:last-child { margin-bottom: 0; }
+
+  .phase-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 5px 14px;
+    border-radius: 100px;
+    margin-bottom: 18px;
+  }
+
+  .phase-label.enable { background: var(--accent-green-dim); color: var(--accent-green); }
+  .phase-label.convert { background: var(--accent-purple-dim); color: var(--accent-purple); }
+  .phase-label.golive { background: var(--accent-red-dim); color: var(--accent-red); }
+
+  .milestone-row {
+    display: grid;
+    grid-template-columns: 1fr 100px 180px;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+    gap: 16px;
+  }
+
+  .milestone-row:last-child { border-bottom: none; }
+
+  .milestone-name {
+    font-size: 0.88rem;
+    color: var(--text-primary);
+    font-weight: 400;
+  }
+
+  .milestone-name .target {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-left: 8px;
+  }
+
+  .milestone-pct {
+    font-size: 0.82rem;
+    font-weight: 600;
+    text-align: right;
+  }
+
+  .bar-track {
+    height: 8px;
+    background: #e2e8f0;
+    border-radius: 100px;
+    overflow: hidden;
+  }
+
+  .bar-fill {
+    height: 100%;
+    border-radius: 100px;
+    transition: width 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+    background: linear-gradient(90deg, #16a367, #0891b2);
+  }
+
+  .bar-fill.mid { background: linear-gradient(90deg, #d97706, #f59e0b); }
+  .bar-fill.low { background: linear-gradient(90deg, #dc2626, #f97316); }
+  .bar-fill.purple { background: linear-gradient(90deg, #7c3aed, #2563eb); }
+
+  /* ── Status Table ── */
+  .status-table-wrapper {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: var(--shadow);
+  }
+
+  .status-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .status-table thead th {
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    text-align: left;
+    padding: 16px 24px;
+    background: var(--bg-elevated);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .status-table tbody td {
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.88rem;
+    vertical-align: top;
+  }
+
+  .status-table tbody tr:last-child td { border-bottom: none; }
+
+  .status-table tbody tr {
+    transition: background 0.15s;
+  }
+
+  .status-table tbody tr:hover { background: var(--bg-card-hover); }
+
+  .status-table .area-name {
+    font-weight: 600;
+    color: var(--text-primary);
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .status-table .status-detail {
+    color: var(--text-secondary);
+    line-height: 1.6;
+  }
+
+  .status-badge {
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 100px;
+    white-space: nowrap;
+  }
+
+  .status-badge.green { background: var(--accent-green-dim); color: var(--accent-green); }
+  .status-badge.yellow { background: var(--accent-yellow-dim); color: var(--accent-yellow); }
+  .status-badge.red { background: var(--accent-red-dim); color: var(--accent-red); }
+
+  /* ── Key Risks & Issues ── */
+  .risks-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+
+  .risk-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+    box-shadow: var(--shadow);
+  }
+
+  .risk-card .risk-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+  }
+
+  .risk-card .risk-title {
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+
+  .risk-card .risk-severity {
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 100px;
+  }
+
+  .risk-severity.high { background: var(--accent-red-dim); color: var(--accent-red); }
+  .risk-severity.medium { background: var(--accent-yellow-dim); color: var(--accent-yellow); }
+  .risk-severity.low { background: var(--accent-green-dim); color: var(--accent-green); }
+
+  .risk-card .risk-desc {
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+    margin-bottom: 12px;
+    line-height: 1.6;
+  }
+
+  .risk-card .risk-mitigation {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+  }
+
+  .risk-card .risk-mitigation strong {
+    color: var(--text-secondary);
+  }
+
+  /* ── Go-Live Countdown ── */
+  .golive-banner {
+    background: linear-gradient(135deg, rgba(37,99,235,0.06), rgba(124,58,237,0.06));
+    border: 1px solid rgba(37,99,235,0.15);
+    border-radius: var(--radius);
+    padding: 28px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 32px;
+    animation: fadeUp 0.6s ease-out 0.35s both;
+  }
+
+  .golive-banner .golive-left {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+
+  .golive-banner .golive-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
+    background: var(--accent-blue-dim);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+  }
+
+  .golive-banner .golive-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accent-blue);
+  }
+
+  .golive-banner .golive-date {
+    font-family: 'Instrument Serif', serif;
+    font-size: 1.5rem;
+    color: var(--text-primary);
+    margin-top: 2px;
+  }
+
+  .golive-banner .countdown {
+    display: flex;
+    gap: 16px;
+  }
+
+  .countdown-unit {
+    text-align: center;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 12px 18px;
+    min-width: 72px;
+  }
+
+  .countdown-unit .num {
+    font-family: 'Instrument Serif', serif;
+    font-size: 1.8rem;
+    color: var(--text-primary);
+    line-height: 1;
+  }
+
+  .countdown-unit .unit-label {
+    font-size: 0.65rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-top: 4px;
+  }
+
+  /* ── Footer ── */
+  .report-footer {
+    margin-top: 48px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.78rem;
+    color: var(--text-muted);
+  }
+
+  /* ── Print Styles ── */
+  @media print {
+    body { background: #fff; color: #1a1a1a; }
+    body::before { display: none; }
+    .page-wrapper { max-width: 100%; padding: 20px; }
+    .health-item, .twin-card, .milestone-container, .status-table-wrapper, .risk-card, .golive-banner {
+      break-inside: avoid;
+    }
+    :root {
+      --bg-primary: #fff;
+      --bg-card: #fff;
+      --bg-elevated: #f5f5f5;
+      --border: #e0e0e0;
+      --text-primary: #1a1a1a;
+      --text-secondary: #555;
+      --text-muted: #888;
+      --shadow: none;
+    }
+  }
+
+  /* ── Responsive ── */
+  @media (max-width: 900px) {
+    .overview-grid { grid-template-columns: 1fr; }
+    .twin-grid { grid-template-columns: 1fr; }
+    .health-grid { grid-template-columns: repeat(2, 1fr); }
+    .risks-grid { grid-template-columns: 1fr; }
+    .milestone-row { grid-template-columns: 1fr 60px 120px; }
+    .golive-banner { flex-direction: column; gap: 20px; text-align: center; }
+  }
+
+  /* ── Animations ── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes fadeDown {
+    from { opacity: 0; transform: translateY(-16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ══════════ TAB NAVIGATION ══════════ */
+  .main-tab-bar {
+    position: sticky; top: 0; z-index: 999;
+    display: flex; align-items: center; gap: 0;
+    background: #fff; border-bottom: 2px solid #e2e8f0;
+    padding: 0 24px;
+    font-family: 'DM Sans', 'Noto Sans Thai', sans-serif;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  }
+  .main-tab-bar .tab-btn {
+    padding: 14px 28px; font-size: 0.9rem; font-weight: 600;
+    color: #64748b; background: none; border: none; border-bottom: 3px solid transparent;
+    cursor: pointer; transition: all 0.2s; white-space: nowrap;
+  }
+  .main-tab-bar .tab-btn:hover { color: #1e293b; background: #f8fafc; }
+  .main-tab-bar .tab-btn.active { color: #2563eb; border-bottom-color: #2563eb; }
+  .main-tab-bar .tab-spacer { flex: 1; }
+  .main-tab-bar .tab-edit-link {
+    font-size: 0.82rem; font-weight: 600; color: #2563eb; text-decoration: none;
+    padding: 8px 16px; border-radius: 8px; border: 1px solid #e2e8f0; transition: all 0.15s;
+  }
+  .main-tab-bar .tab-edit-link:hover { background: #eff6ff; }
+
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* Scope summary background only when active */
+  #tab-summary.active { background: var(--bg-primary); }
+  #tab-gantt.active { display: flex; flex-direction: column; height: calc(100vh - 53px); }
+
+  /* Gantt scrollbar */
+  .custom-scrollbar::-webkit-scrollbar { height: 8px; width: 6px; }
+  .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 4px; }
+  .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+</style>
+</head>
+<body class="bg-white">
+
+<!-- ══════════ TAB NAVIGATION BAR ══════════ -->
+<nav class="main-tab-bar">
+  <button class="tab-btn active" onclick="switchTab('summary')">Executive Summary</button>
+  <button class="tab-btn" onclick="switchTab('gantt')">Gantt Chart / Timeline</button>
+  <div class="tab-spacer"></div>
+  <a href="Progess_Project_Editor.html" class="tab-edit-link">Edit Report Data</a>
+</nav>
+
+<!-- ══════════ TAB 1: EXECUTIVE SUMMARY ══════════ -->
+<div id="tab-summary" class="tab-panel active" style="background:var(--bg-primary);">
+<div class="page-wrapper">
+
+  <!-- ══════════════════════════════════════════ HEADER ═══ -->
+  <header class="report-header">
+    <div class="left">
+      <h1>Project Executive Summary</h1>
+      <div class="subtitle">ABACUS — Oracle NetSuite Implementation</div>
+    </div>
+    <div class="right">
+      <span class="report-number">Report #23</span>
+      <div class="date">2 December 2025</div>
+    </div>
+  </header>
+
+  <!-- ══════════════════════════════════ OVERVIEW: Progress + Health ═══ -->
+  <div class="overview-grid">
+
+    <!-- Overall Progress Ring -->
+    <div class="progress-card">
+      <div class="label">Overall Progress</div>
+      <div class="progress-ring-wrapper">
+        <svg viewBox="0 0 140 140">
+          <defs>
+            <linearGradient id="progressGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stop-color="#16a367"/>
+              <stop offset="100%" stop-color="#0891b2"/>
+            </linearGradient>
+          </defs>
+          <circle class="progress-ring-bg" cx="70" cy="70" r="65"/>
+          <circle class="progress-ring-fill" cx="70" cy="70" r="65" id="progressRing"/>
+        </svg>
+        <div class="center-text">
+          <span class="percentage" id="progressNumber">85</span>
+          <span class="pct-label">PERCENT</span>
+        </div>
+      </div>
+      <div class="progress-change">
+        <span class="arrow-same">→</span> Previous: 85%
+      </div>
+    </div>
+
+    <!-- Health Indicators -->
+    <div class="health-card">
+      <div class="section-label">Project Health Indicators</div>
+      <div class="health-grid">
+
+        <div class="health-item yellow" data-key="overallHealth">
+          <div class="health-dot yellow">!</div>
+          <div class="health-info">
+            <div class="health-name">Overall Health</div>
+            <div class="health-status">Needs attention</div>
+          </div>
+        </div>
+
+        <div class="health-item green" data-key="stakeholder">
+          <div class="health-dot green">✓</div>
+          <div class="health-info">
+            <div class="health-name">Stakeholder</div>
+            <div class="health-status">On track</div>
+          </div>
+        </div>
+
+        <div class="health-item yellow" data-key="scope">
+          <div class="health-dot yellow">!</div>
+          <div class="health-info">
+            <div class="health-name">Scope</div>
+            <div class="health-status">Needs attention</div>
+          </div>
+        </div>
+
+        <div class="health-item yellow" data-key="schedule">
+          <div class="health-dot yellow">!</div>
+          <div class="health-info">
+            <div class="health-name">Schedule</div>
+            <div class="health-status">Needs attention</div>
+          </div>
+        </div>
+
+        <div class="health-item green" data-key="resource">
+          <div class="health-dot green">✓</div>
+          <div class="health-info">
+            <div class="health-name">Resource</div>
+            <div class="health-status">On track</div>
+          </div>
+        </div>
+
+        <div class="health-item yellow" data-key="issues">
+          <div class="health-dot yellow">!</div>
+          <div class="health-info">
+            <div class="health-name">Issues</div>
+            <div class="health-status">Needs attention</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════ GO-LIVE COUNTDOWN ═══ -->
+  <div class="golive-banner">
+    <div class="golive-left">
+      <div class="golive-icon">🚀</div>
+      <div>
+        <div class="golive-label">Target Go-Live Date</div>
+        <div class="golive-date">7 January 2026</div>
+      </div>
+    </div>
+    <div class="countdown" id="countdown">
+      <div class="countdown-unit">
+        <div class="num" id="cdDays">36</div>
+        <div class="unit-label">Days</div>
+      </div>
+      <div class="countdown-unit">
+        <div class="num" id="cdHours">14</div>
+        <div class="unit-label">Hours</div>
+      </div>
+      <div class="countdown-unit">
+        <div class="num" id="cdMins">22</div>
+        <div class="unit-label">Minutes</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════ ACCOMPLISHMENT & PLAN ═══ -->
+  <div class="section">
+    <div class="section-title">
+      <span class="icon" style="background:var(--accent-green-dim);color:var(--accent-green);">✦</span>
+      Weekly Summary
+    </div>
+    <div class="twin-grid">
+
+      <div class="twin-card accomplished">
+        <div class="card-header">✓ สิ่งที่ทำสำเร็จแล้ว (Accomplishments)</div>
+        <ul>
+          <li>UAT Cycle #1 completed — 916 test cases executed</li>
+          <li>UAT Cycle #2 completed — 644 test cases</li>
+          <li>Deployment Strategy & Runbook drafted and under review</li>
+          <li>All SIT defects closed and verified</li>
+        </ul>
+      </div>
+
+      <div class="twin-card planned">
+        <div class="card-header">→ แผนสัปดาห์ถัดไป (Next Week Plan)</div>
+        <ul>
+          <li>UAT Cycle #3 <span class="date-tag">03–04 Dec</span></li>
+          <li>User Manuals finalization <span class="date-tag">01 Nov – 04 Dec</span></li>
+          <li>Deployment Strategy sign-off <span class="date-tag">27 Oct – 24 Nov</span></li>
+          <li>Training sessions kick-off <span class="date-tag">09–15 Dec</span></li>
+          <li>PRD Deployment preparation <span class="date-tag">16–23 Dec</span></li>
+        </ul>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══════════════════════════ MILESTONES ═══ -->
+  <div class="section">
+    <div class="section-title">
+      <span class="icon" style="background:var(--accent-purple-dim);color:var(--accent-purple);">◆</span>
+      Key Milestones
+    </div>
+    <div class="milestone-container">
+
+      <!-- Enable Stage -->
+      <div class="milestone-phase">
+        <div class="phase-label enable">● Enable Stage</div>
+
+        <div class="milestone-row">
+          <div class="milestone-name">Test Strategy <span class="target">Target: 19-Aug</span></div>
+          <div class="milestone-pct" style="color:var(--accent-green)">100%</div>
+          <div class="bar-track"><div class="bar-fill" style="width:100%"></div></div>
+        </div>
+
+        <div class="milestone-row">
+          <div class="milestone-name">SIT Preparation <span class="target">Target: 06-Oct</span></div>
+          <div class="milestone-pct" style="color:var(--accent-green)">100%</div>
+          <div class="bar-track"><div class="bar-fill" style="width:100%"></div></div>
+        </div>
+
+        <div class="milestone-row">
+          <div class="milestone-name">System Integration Test (SIT) <span class="target">Target: 07–31 Oct</span></div>
+          <div class="milestone-pct" style="color:var(--accent-green)">100%</div>
+          <div class="bar-track"><div class="bar-fill" style="width:100%"></div></div>
+        </div>
+
+        <div class="milestone-row">
+          <div class="milestone-name">UAT Preparation <span class="target">Target: 04-Nov</span></div>
+          <div class="milestone-pct" style="color:var(--accent-green)">100%</div>
+          <div class="bar-track"><div class="bar-fill" style="width:100%"></div></div>
+        </div>
+
+        <div class="milestone-row">
+          <div class="milestone-name">User Acceptance Test (UAT) <span class="target">Target: 06 Nov – 02 Dec</span></div>
+          <div class="milestone-pct" style="color:var(--accent-yellow)">70%</div>
+          <div class="bar-track"><div class="bar-fill mid" style="width:70%"></div></div>
+        </div>
+
+        <div class="milestone-row">
+          <div class="milestone-name">Trainings <span class="target">Target: 03 Dec – 19 Dec</span></div>
+          <div class="milestone-pct" style="color:var(--accent-red)">33%</div>
+          <div class="bar-track"><div class="bar-fill low" style="width:33%"></div></div>
+        </div>
+      </div>
+
+      <!-- Convert Stage -->
+      <div class="milestone-phase">
+        <div class="phase-label convert">● Convert Stage</div>
+
+        <div class="milestone-row">
+          <div class="milestone-name">Deployment Strategy & Runbook <span class="target">Planned: 27 Oct – 24 Nov</span></div>
+          <div class="milestone-pct" style="color:var(--accent-yellow)">46%</div>
+          <div class="bar-track"><div class="bar-fill purple" style="width:46%"></div></div>
+        </div>
+
+        <div class="milestone-row">
+          <div class="milestone-name">PRD Deployment & Shakedown Test <span class="target">Target: 03–19 Dec</span></div>
+          <div class="milestone-pct" style="color:var(--text-muted)">0%</div>
+          <div class="bar-track"><div class="bar-fill purple" style="width:0%"></div></div>
+        </div>
+
+        <div class="milestone-row">
+          <div class="milestone-name">Production Support Plan <span class="target">Target: 01–08 Dec</span></div>
+          <div class="milestone-pct" style="color:var(--text-muted)">0%</div>
+          <div class="bar-track"><div class="bar-fill purple" style="width:0%"></div></div>
+        </div>
+      </div>
+
+      <!-- Go-Live -->
+      <div class="milestone-phase">
+        <div class="phase-label golive">● Go-Live</div>
+        <div class="milestone-row">
+          <div class="milestone-name">System Go-Live <span class="target">Target: 07-Jan-2026</span></div>
+          <div class="milestone-pct" style="color:var(--text-muted)">—</div>
+          <div class="bar-track"><div class="bar-fill low" style="width:0%"></div></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══════════════════════════ STATUS SUMMARY TABLE ═══ -->
+  <div class="section">
+    <div class="section-title">
+      <span class="icon" style="background:var(--accent-blue-dim);color:var(--accent-blue);">■</span>
+      Status Summary
+    </div>
+    <div class="status-table-wrapper">
+      <table class="status-table">
+        <thead>
+          <tr>
+            <th style="width:140px;">Area</th>
+            <th style="width:100px;">Status</th>
+            <th>Details</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="area-name"><span style="color:var(--accent-green)">●</span> Stakeholder</span></td>
+            <td><span class="status-badge green">Good</span></td>
+            <td class="status-detail">Fully committed. All key stakeholders actively participating in UAT review sessions.</td>
+          </tr>
+          <tr>
+            <td><span class="area-name"><span style="color:var(--accent-yellow)">●</span> Scope</span></td>
+            <td><span class="status-badge yellow">At Risk</span></td>
+            <td class="status-detail">Customized Reports confirmed: 7 reports. Remaining 3 reports to be decided after Go-Live.</td>
+          </tr>
+          <tr>
+            <td><span class="area-name"><span style="color:var(--accent-yellow)">●</span> Schedule</span></td>
+            <td><span class="status-badge yellow">At Risk</span></td>
+            <td class="status-detail">UAT extended 1 additional week to ensure all defects closed. Training & Deployment rescheduled accordingly.</td>
+          </tr>
+          <tr>
+            <td><span class="area-name"><span style="color:var(--accent-green)">●</span> Resource</span></td>
+            <td><span class="status-badge green">Good</span></td>
+            <td class="status-detail">High performing team of both ABACUS and SLD. 11–15 UAT testers assigned.</td>
+          </tr>
+          <tr>
+            <td><span class="area-name"><span style="color:var(--accent-yellow)">●</span> Issues</span></td>
+            <td><span class="status-badge yellow">At Risk</span></td>
+            <td class="status-detail">Need improvement on quality of defect fixing. Recurring defects identified in financial module.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════ KEY RISKS ═══ -->
+  <div class="section">
+    <div class="section-title">
+      <span class="icon" style="background:var(--accent-red-dim);color:var(--accent-red);">▲</span>
+      Key Risks & Issues
+    </div>
+    <div class="risks-grid">
+
+      <div class="risk-card">
+        <div class="risk-header">
+          <div class="risk-title">Defect Quality</div>
+          <span class="risk-severity high">High</span>
+        </div>
+        <div class="risk-desc">Recurring defects in financial module after fixes applied. Root cause analysis needed.</div>
+        <div class="risk-mitigation"><strong>Mitigation:</strong> Implement peer code review before deploying fixes. Add regression test suite.</div>
+      </div>
+
+      <div class="risk-card">
+        <div class="risk-header">
+          <div class="risk-title">Schedule Compression</div>
+          <span class="risk-severity high">High</span>
+        </div>
+        <div class="risk-desc">UAT extension pushes Training & Deployment windows. Go-Live date at risk if further delays occur.</div>
+        <div class="risk-mitigation"><strong>Mitigation:</strong> Parallel track training preparation. Standby weekend deployment plan.</div>
+      </div>
+
+      <div class="risk-card">
+        <div class="risk-header">
+          <div class="risk-title">Pending Report Decisions</div>
+          <span class="risk-severity medium">Medium</span>
+        </div>
+        <div class="risk-desc">3 customized reports deferred to post Go-Live. Users may require these for daily operations.</div>
+        <div class="risk-mitigation"><strong>Mitigation:</strong> Provide workaround using standard reports. Prioritize post Go-Live sprint.</div>
+      </div>
+
+      <div class="risk-card">
+        <div class="risk-header">
+          <div class="risk-title">Training Readiness</div>
+          <span class="risk-severity medium">Medium</span>
+        </div>
+        <div class="risk-desc">Training materials only 33% complete. Compressed window may affect user adoption quality.</div>
+        <div class="risk-mitigation"><strong>Mitigation:</strong> Focus on role-based quick-start guides. Record video walkthroughs for async learning.</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══════════════════════════ FOOTER ═══ -->
+  <footer class="report-footer">
+    <div>Prepared by: Project Management Office</div>
+    <div>Confidential — For Internal Use Only</div>
+  </footer>
+
+</div>
+</div><!-- end #tab-summary -->
+
+<!-- ══════════ TAB 2: GANTT CHART ══════════ -->
+<div id="tab-gantt" class="tab-panel">
+  <div id="gantt-root"></div>
+</div>
+
+<!-- ══════════════════════════ SCRIPTS ═══ -->
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+
+    // ═══ Load data from localStorage (if any) ═══
+    let data = null;
+    try {
+      const stored = localStorage.getItem('projectReportData');
+      if (stored) data = JSON.parse(stored);
+    } catch(e) { /* ignore */ }
+
+    if (data) applyData(data);
+
+    // ═══ Animate progress ring ═══
+    const ring = document.getElementById('progressRing');
+    const circumference = 2 * Math.PI * 65;
+    const progress = data ? (data.progressCurrent || 85) : 85;
+    const offset = circumference - (progress / 100) * circumference;
+    document.getElementById('progressNumber').textContent = progress;
+    setTimeout(() => { ring.style.strokeDashoffset = offset; }, 300);
+
+    // ═══ Countdown ═══
+    const goLiveDateStr = data ? data.goLiveDate : '2026-01-07';
+    const goLiveDate = new Date(goLiveDateStr + 'T09:00:00');
+
+    function updateCountdown() {
+      const now = new Date();
+      const diff = goLiveDate - now;
+      if (diff <= 0) {
+        document.getElementById('cdDays').textContent = '0';
+        document.getElementById('cdHours').textContent = '0';
+        document.getElementById('cdMins').textContent = '0';
+        return;
+      }
+      document.getElementById('cdDays').textContent = Math.floor(diff / (1000*60*60*24));
+      document.getElementById('cdHours').textContent = Math.floor((diff % (1000*60*60*24)) / (1000*60*60));
+      document.getElementById('cdMins').textContent = Math.floor((diff % (1000*60*60)) / (1000*60));
+    }
+    updateCountdown();
+    setInterval(updateCountdown, 60000);
+  });
+
+  // ═══ Apply saved data to the report ═══
+  function applyData(d) {
+    // Header
+    if(d.reportNumber) document.querySelector('.report-number').textContent = d.reportNumber;
+    if(d.reportDate) document.querySelector('.report-header .date').textContent = d.reportDate;
+    if(d.projectSubtitle) document.querySelector('.report-header .subtitle').textContent = d.projectSubtitle;
+
+    // Previous progress
+    if(d.progressPrevious !== undefined) {
+      const arrow = d.progressCurrent > d.progressPrevious ? '↑' : (d.progressCurrent < d.progressPrevious ? '↓' : '→');
+      const cls = d.progressCurrent > d.progressPrevious ? 'arrow-up' : 'arrow-same';
+      document.querySelector('.progress-change').innerHTML = `<span class="${cls}">${arrow}</span> Previous: ${d.progressPrevious}%`;
+    }
+
+    // Go-Live date display
+    if(d.goLiveDate) {
+      const dt = new Date(d.goLiveDate + 'T00:00:00');
+      const fmt = dt.toLocaleDateString('en-GB', { day:'numeric', month:'long', year:'numeric' });
+      document.querySelector('.golive-date').textContent = fmt;
+    }
+
+    // Health Indicators
+    if(d.health) {
+      const healthKeys = ['overallHealth','stakeholder','scope','schedule','resource','issues'];
+      const iconMap = { green:'✓', yellow:'!', red:'✕' };
+      const statusMap = { green:'On track', yellow:'Needs attention', red:'Critical' };
+      healthKeys.forEach(key => {
+        const item = document.querySelector(`.health-item[data-key="${key}"]`);
+        if(!item || !d.health[key]) return;
+        const h = d.health[key];
+        // Update classes on item
+        item.className = 'health-item ' + h.level;
+        // Update dot
+        const dot = item.querySelector('.health-dot');
+        dot.className = 'health-dot ' + h.level;
+        dot.textContent = iconMap[h.level] || '!';
+        // Update status text
+        const statusEl = item.querySelector('.health-status');
+        statusEl.textContent = h.status || statusMap[h.level];
+      });
+    }
+
+    // Accomplishments
+    if(d.accomplishments && d.accomplishments.length) {
+      const ul = document.querySelector('.twin-card.accomplished ul');
+      ul.innerHTML = d.accomplishments.map(a => `<li>${esc(a)}</li>`).join('');
+    }
+
+    // Plans
+    if(d.plans && d.plans.length) {
+      const ul = document.querySelector('.twin-card.planned ul');
+      ul.innerHTML = d.plans.map(p => {
+        const tag = p.date ? ` <span class="date-tag">${esc(p.date)}</span>` : '';
+        return `<li>${esc(p.text)}${tag}</li>`;
+      }).join('');
+    }
+
+    // Milestones
+    if(d.milestones && d.milestones.length) {
+      const container = document.querySelector('.milestone-container');
+      const phases = { enable:'Enable Stage', convert:'Convert Stage', golive:'Go-Live' };
+      const phaseOrder = ['enable','convert','golive'];
+      let html = '';
+      phaseOrder.forEach(phase => {
+        const items = d.milestones.filter(m => m.phase === phase);
+        if(!items.length) return;
+        html += `<div class="milestone-phase"><div class="phase-label ${phase}">● ${phases[phase]}</div>`;
+        items.forEach(m => {
+          const pct = m.pct;
+          let color = 'var(--accent-green)';
+          let barClass = '';
+          if(pct === 0) { color = 'var(--text-muted)'; }
+          else if(pct < 50) { color = 'var(--accent-red)'; barClass = phase==='convert'||phase==='golive' ? 'purple' : 'low'; }
+          else if(pct < 100) { color = 'var(--accent-yellow)'; barClass = phase==='convert'||phase==='golive' ? 'purple' : 'mid'; }
+          else { barClass = phase==='convert'||phase==='golive' ? 'purple' : ''; }
+          const pctText = pct === 0 && phase === 'golive' ? '—' : pct + '%';
+          html += `<div class="milestone-row">
+            <div class="milestone-name">${esc(m.name)} <span class="target">${esc(m.target)}</span></div>
+            <div class="milestone-pct" style="color:${color}">${pctText}</div>
+            <div class="bar-track"><div class="bar-fill ${barClass}" style="width:${pct}%"></div></div>
+          </div>`;
+        });
+        html += '</div>';
+      });
+      container.innerHTML = html;
+    }
+
+    // Status Summary
+    if(d.statusSummary && d.statusSummary.length) {
+      const tbody = document.querySelector('.status-table tbody');
+      const badgeLabel = { green:'Good', yellow:'At Risk', red:'Critical' };
+      tbody.innerHTML = d.statusSummary.map(s => `<tr>
+        <td><span class="area-name"><span style="color:var(--accent-${s.status==='green'?'green':s.status==='yellow'?'yellow':'red'})">●</span> ${esc(s.area)}</span></td>
+        <td><span class="status-badge ${s.status}">${badgeLabel[s.status]||s.status}</span></td>
+        <td class="status-detail">${esc(s.detail)}</td>
+      </tr>`).join('');
+    }
+
+    // Risks
+    if(d.risks && d.risks.length) {
+      const grid = document.querySelector('.risks-grid');
+      grid.innerHTML = d.risks.map(r => `<div class="risk-card">
+        <div class="risk-header">
+          <div class="risk-title">${esc(r.title)}</div>
+          <span class="risk-severity ${r.severity}">${r.severity.charAt(0).toUpperCase()+r.severity.slice(1)}</span>
+        </div>
+        <div class="risk-desc">${esc(r.desc)}</div>
+        <div class="risk-mitigation"><strong>Mitigation:</strong> ${esc(r.mitigation)}</div>
+      </div>`).join('');
+    }
+  }
+
+  function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+</script>
+
+<!-- ══════════ TAB SWITCHING ══════════ -->
+<script>
+  let ganttRendered = false;
+  function switchTab(tabName) {
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.main-tab-bar .tab-btn').forEach(b => b.classList.remove('active'));
+    const panel = document.getElementById('tab-' + tabName);
+    panel.classList.add('active');
+    event.target.classList.add('active');
+    // Render Gantt on first switch
+    if (tabName === 'gantt' && !ganttRendered) {
+      ganttRendered = true;
+      if (window.__renderGantt) window.__renderGantt();
+    }
+  }
+</script>
+
+<!-- ══════════ GANTT CHART REACT APP ══════════ -->
+<script type="text/babel">
+const { useState, useMemo, useEffect, useRef } = React;
+
+const IconInfo = () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>;
+const IconFilter = () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>;
+const IconCalendar = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>;
+const IconPlus = () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>;
+const IconTrash = () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>;
+const IconEdit = () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>;
+const IconCheck = () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>;
+const IconX = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>;
+const IconZoom = () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" x2="16.65" y1="21" y2="16.65"/><line x1="11" x2="11" y1="8" y2="14"/><line x1="8" x2="14" y1="11" y2="11"/></svg>;
+const IconDownload = () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>;
+const IconUpload = () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>;
+const IconExternalLink = () => <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" x2="21" y1="14" y2="3"/></svg>;
+const ShapeSquare = ({color, size}) => <svg width={size} height={size} viewBox="0 0 24 24" fill={color} stroke={color} strokeWidth="2"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/></svg>;
+const ShapeCircle = ({color, size}) => <svg width={size} height={size} viewBox="0 0 24 24" fill={color} stroke={color} strokeWidth="2"><circle cx="12" cy="12" r="10"/></svg>;
+const ShapeTriangle = ({color, size}) => <svg width={size} height={size} viewBox="0 0 24 24" fill={color} stroke={color} strokeWidth="2"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/></svg>;
+const ShapeStar = ({color, size}) => <svg width={size} height={size} viewBox="0 0 24 24" fill={color} stroke={color} strokeWidth="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>;
+const ShapeFlag = ({color, size}) => <svg width={size} height={size} viewBox="0 0 24 24" fill={color} stroke={color} strokeWidth="2"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" x2="4" y1="22" y2="15"/></svg>;
+
+const THAI_MONTHS = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+const getWeekNumber = (date) => { const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())); const dayNum = d.getUTCDay() || 7; d.setUTCDate(d.getUTCDate() + 4 - dayNum); const yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1)); return Math.ceil((((d - yearStart) / 86400000) + 1)/7); };
+const formatDDMMYYYY = (ds) => { if (!ds) return ''; const p = ds.split('-'); return p.length===3 ? `${p[2]}/${p[1]}/${p[0]}` : ds; };
+const parseDateString = (str) => { if (!str) return new Date(NaN); const p = str.split('-'); if (p.length!==3) return new Date(NaN); const d = new Date(p[0], p[1]-1, p[2]); d.setFullYear(p[0]); return d; };
+
+function GanttApp() {
+  const [phases, setPhases] = useState(() => { try { return JSON.parse(localStorage.getItem('gantt_phases')) || ['ENGAGE','DRIVE','ENABLE','CONVERT']; } catch { return ['ENGAGE','DRIVE','ENABLE','CONVERT']; } });
+  const [legends, setLegends] = useState(() => { try { return JSON.parse(localStorage.getItem('gantt_legends')) || [
+    {id:'leg-1',label:'Completed Task',type:'task',color:'#94a3b8',shape:'square'},{id:'leg-2',label:'In Progress',type:'task',color:'#3b82f6',shape:'square'},{id:'leg-3',label:'Key Milestone',type:'milestone',color:'#2563eb',shape:'diamond'},{id:'leg-4',label:'Payment Milestone',type:'milestone',color:'#ef4444',shape:'diamond'},{id:'leg-5',label:'Go-Live',type:'milestone',color:'#22c55e',shape:'flag'}
+  ]; } catch { return []; } });
+  const [tasks, setTasks] = useState(() => { try { return JSON.parse(localStorage.getItem('gantt_tasks')) || [
+    {id:'1',phase:'ENGAGE',name:'Project Kick Off',start:'2024-03-05',end:'2024-03-05',type:'milestone',shape:'diamond',color:'#2563eb',row:0,link:'',progress:0},{id:'2',phase:'ENGAGE',name:'Requirement Workshops',start:'2024-03-07',end:'2024-03-20',type:'task',color:'#94a3b8',row:1,link:'',progress:100},{id:'3',phase:'DRIVE',name:'System Blueprint',start:'2024-03-15',end:'2024-04-10',type:'task',color:'#3b82f6',row:0,link:'',progress:60},{id:'4',phase:'DRIVE',name:'Sign-off Blueprint',start:'2024-04-10',end:'2024-04-10',type:'milestone',shape:'diamond',color:'#ef4444',row:1,link:'',progress:0},{id:'5',phase:'ENABLE',name:'SIT Testing',start:'2024-04-11',end:'2024-04-25',type:'task',color:'#eab308',row:0,link:'',progress:20},{id:'6',phase:'CONVERT',name:'Production Go-Live',start:'2024-05-02',end:'2024-05-02',type:'milestone',shape:'flag',color:'#22c55e',row:0,link:'',progress:0}
+  ]; } catch { return []; } });
+  const [viewStart, setViewStart] = useState('');
+  const [viewEnd, setViewEnd] = useState('');
+  const [dayWidth, setDayWidth] = useState(() => { try { return parseInt(localStorage.getItem('gantt_dayWidth')||24,10); } catch { return 24; } });
+  const fileInputRef = useRef(null);
+  const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
+  const [isPhaseModalOpen, setIsPhaseModalOpen] = useState(false);
+  const [isLegendModalOpen, setIsLegendModalOpen] = useState(false);
+  const [newPhaseName, setNewPhaseName] = useState('');
+  const [editingPhase, setEditingPhase] = useState(null);
+  const [tempPhaseName, setTempPhaseName] = useState('');
+  const [editingTaskId, setEditingTaskId] = useState(null);
+  const [taskForm, setTaskForm] = useState({phase:'',name:'',start:'',end:'',type:'task',shape:'diamond',color:'#3b82f6',legendId:'custom',row:0,link:'',progress:0});
+  const [legendForm, setLegendForm] = useState({label:'',type:'task',color:'#3b82f6',shape:'diamond'});
+
+  useEffect(() => { const s=localStorage.getItem('gantt_viewStart'), e=localStorage.getItem('gantt_viewEnd'); if(s&&e){setViewStart(s);setViewEnd(e);}else{const t=new Date('2024-03-01'),st=new Date(t.getFullYear(),t.getMonth(),1),en=new Date(t.getFullYear(),t.getMonth()+3,0);setViewStart(st.toISOString().split('T')[0]);setViewEnd(en.toISOString().split('T')[0]);} }, []);
+  useEffect(() => { localStorage.setItem('gantt_phases', JSON.stringify(phases)); }, [phases]);
+  useEffect(() => { localStorage.setItem('gantt_legends', JSON.stringify(legends)); }, [legends]);
+  useEffect(() => { localStorage.setItem('gantt_tasks', JSON.stringify(tasks)); }, [tasks]);
+  useEffect(() => { if(viewStart) localStorage.setItem('gantt_viewStart', viewStart); }, [viewStart]);
+  useEffect(() => { if(viewEnd) localStorage.setItem('gantt_viewEnd', viewEnd); }, [viewEnd]);
+  useEffect(() => { localStorage.setItem('gantt_dayWidth', dayWidth); }, [dayWidth]);
+
+  const handleExport = () => { const d={phases,legends,tasks,viewStart,viewEnd,dayWidth}; const b=new Blob([JSON.stringify(d,null,2)],{type:'application/json'}); const u=URL.createObjectURL(b); const a=document.createElement('a'); a.href=u; a.download='Gantt_Roadmap_Template.json'; document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(u); };
+  const handleImportClick = () => fileInputRef.current.click();
+  const handleFileChange = (e) => { const f=e.target.files[0]; if(!f)return; const r=new FileReader(); r.onload=(ev)=>{try{const d=JSON.parse(ev.target.result);if(d.phases)setPhases(d.phases);if(d.legends)setLegends(d.legends);if(d.tasks)setTasks(d.tasks);if(d.viewStart)setViewStart(d.viewStart);if(d.viewEnd)setViewEnd(d.viewEnd);if(d.dayWidth)setDayWidth(d.dayWidth);alert('นำเข้าข้อมูลสำเร็จ!');}catch{alert('รูปแบบไฟล์ไม่ถูกต้อง');}}; r.readAsText(f); e.target.value=''; };
+
+  const startEditPhase = (p) => { setEditingPhase(p); setTempPhaseName(p); };
+  const cancelEditPhase = () => { setEditingPhase(null); setTempPhaseName(''); };
+  const saveEditPhase = () => { if(tempPhaseName&&tempPhaseName!==editingPhase){setPhases(phases.map(p=>p===editingPhase?tempPhaseName:p));setTasks(tasks.map(t=>t.phase===editingPhase?{...t,phase:tempPhaseName}:t));} setEditingPhase(null);setTempPhaseName(''); };
+
+  const timelineData = useMemo(() => {
+    if(!viewStart||!viewEnd) return {years:[],months:[],weeks:[],totalDays:0};
+    let current=parseDateString(viewStart), end=parseDateString(viewEnd);
+    if(isNaN(current.getTime())||isNaN(end.getTime())||current>end) return {years:[],months:[],weeks:[],totalDays:0};
+    const MAX=1095; if((end-current)/(1000*3600*24)>MAX) end=new Date(current.getTime()+MAX*24*3600*1000);
+    const mm=new Map(),ym=new Map(),wm=new Map(); let dc=0;
+    while(current<=end){ const y=current.getFullYear(),m=current.getMonth(),mk=`${y}-${m}`;
+      if(!ym.has(y))ym.set(y,{label:y,count:1});else ym.get(y).count++;
+      if(!mm.has(mk))mm.set(mk,{label:THAI_MONTHS[m],year:y,count:1});else mm.get(mk).count++;
+      const dtm=current.getDate()-current.getDay()+(current.getDay()===0?-6:1); const mon=new Date(current.getFullYear(),current.getMonth(),dtm); mon.setFullYear(current.getFullYear()); const wk=mon.getTime();
+      if(!wm.has(wk)){wm.set(wk,{label:`Week ${getWeekNumber(current)}`,count:1});}else{wm.get(wk).count++;}
+      dc++; current.setDate(current.getDate()+1);
+    }
+    return {years:Array.from(ym.values()),months:Array.from(mm.values()),weeks:Array.from(wm.values()),totalDays:dc};
+  }, [viewStart,viewEnd]);
+
+  const groupedTasks = useMemo(() => { const g={}; phases.forEach(p=>g[p]=[]); tasks.forEach(t=>{if(!g[t.phase])g[t.phase]=[];g[t.phase].push(t);}); return g; }, [tasks,phases]);
+  const phaseHeights = useMemo(() => { const h={}; phases.forEach(phase=>{const pt=groupedTasks[phase]||[];const mr=pt.reduce((mx,t)=>Math.max(mx,t.row||0),0);h[phase]=Math.max(80,(mr+1)*44+20);}); return h; }, [groupedTasks,phases]);
+
+  const getTaskStyles = (startStr,endStr,isM) => {
+    let vS=parseDateString(viewStart).getTime(),vE=parseDateString(viewEnd).getTime(); const tS=parseDateString(startStr).getTime(),tE=parseDateString(endStr).getTime();
+    if(isNaN(vS)||isNaN(vE)||isNaN(tS)||isNaN(tE)) return {display:'none'}; const MX=1095; if((vE-vS)/(1000*3600*24)>MX)vE=vS+MX*24*3600*1000;
+    if(tE<vS||tS>vE) return {display:'none'}; const ld=(tS-vS)/(1000*3600*24);
+    if(isM) return {left:`calc(${ld*dayWidth}px + ${dayWidth/2}px)`,width:'0px',display:'flex'};
+    let vs2=Math.max(vS,tS),ve2=Math.min(vE,tE); return {left:`${(vs2-vS)/(1000*3600*24)*dayWidth}px`,width:`${((ve2-vs2)/(1000*3600*24)+1)*dayWidth}px`,display:'flex'};
+  };
+
+  const renderShape = (shape,color,size=18) => {
+    switch(shape){case 'circle':return <ShapeCircle size={size} color={color}/>;case 'square':return <ShapeSquare size={size} color={color}/>;case 'star':return <ShapeStar size={size} color={color}/>;case 'flag':return <ShapeFlag size={size} color={color}/>;case 'triangle':return <ShapeTriangle size={size} color={color}/>;default:return <div style={{width:size-4,height:size-4,backgroundColor:color,transform:'rotate(45deg)'}}></div>;}
+  };
+
+  const handleLegendSelect = (e) => { const lid=e.target.value; if(lid==='custom')setTaskForm({...taskForm,legendId:lid});else{const l=legends.find(x=>x.id===lid);if(l)setTaskForm({...taskForm,legendId:lid,type:l.type,shape:l.shape,color:l.color,end:l.type==='milestone'?taskForm.start:taskForm.end});} };
+  const openTaskModal = (task=null) => { if(task){setTaskForm({...task,legendId:'custom',row:task.row||0,link:task.link||'',progress:task.progress||0});setEditingTaskId(task.id);}else{setTaskForm({phase:phases[0]||'',name:'',start:viewStart,end:viewStart,type:'task',shape:'diamond',color:'#3b82f6',legendId:'custom',row:0,link:'',progress:0});setEditingTaskId(null);}setIsTaskModalOpen(true); };
+  const saveTask = (e) => { e.preventDefault(); const td={...taskForm};delete td.legendId; if(editingTaskId)setTasks(tasks.map(t=>t.id===editingTaskId?{...td,id:editingTaskId}:t));else setTasks([...tasks,{...td,id:Date.now().toString()}]);setIsTaskModalOpen(false); };
+  const addLegend = () => { if(legendForm.label){setLegends([...legends,{...legendForm,id:`leg-${Date.now()}`}]);setLegendForm({label:'',type:'task',color:'#3b82f6',shape:'diamond'});} };
+
+  return (
+    <div className="min-h-0 bg-white text-slate-800 font-sans flex flex-col flex-1 overflow-hidden">
+      <div className="flex flex-col gap-4 p-4 border-b bg-slate-50 shrink-0 shadow-sm relative z-20">
+        <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4">
+          <div><h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2"><IconCalendar /> Project Master Plan</h1></div>
+          <div className="flex flex-wrap items-center gap-3 w-full xl:w-auto">
+            <div className="flex items-center gap-2 bg-white p-1.5 rounded-md border border-slate-300 shadow-sm">
+              <div className="flex flex-col px-1"><span className="text-[10px] text-slate-500 uppercase font-bold">เริ่มวันที่ ({formatDDMMYYYY(viewStart)})</span><input type="date" value={viewStart} onChange={(e)=>setViewStart(e.target.value)} className="text-sm outline-none text-slate-700 bg-transparent"/></div>
+              <span className="text-slate-300">-</span>
+              <div className="flex flex-col px-1"><span className="text-[10px] text-slate-500 uppercase font-bold">ถึงวันที่ ({formatDDMMYYYY(viewEnd)})</span><input type="date" value={viewEnd} onChange={(e)=>setViewEnd(e.target.value)} className="text-sm outline-none text-slate-700 bg-transparent"/></div>
+            </div>
+            <div className="flex items-center gap-2 bg-white px-3 py-2 rounded-md border border-slate-300 shadow-sm" title="ย่อ/ขยาย"><IconZoom/><input type="range" min="10" max="60" value={dayWidth} onChange={(e)=>setDayWidth(parseInt(e.target.value))} className="w-16 sm:w-20 cursor-pointer accent-blue-600"/></div>
+            <button onClick={()=>setIsPhaseModalOpen(true)} className="px-3 py-2 bg-white border border-slate-300 hover:bg-slate-100 rounded text-sm font-medium flex items-center gap-2"><IconFilter/><span className="hidden sm:inline">Phase</span></button>
+            <button onClick={()=>setIsLegendModalOpen(true)} className="px-3 py-2 bg-white border border-slate-300 hover:bg-slate-100 rounded text-sm font-medium flex items-center gap-2"><IconInfo/><span className="hidden sm:inline">สัญลักษณ์</span></button>
+            <div className="flex border border-slate-300 rounded overflow-hidden shadow-sm">
+              <button onClick={handleExport} className="px-3 py-2 bg-white hover:bg-slate-100 text-slate-700 text-sm font-medium flex items-center gap-2 border-r border-slate-300"><IconDownload/><span className="hidden md:inline">Export</span></button>
+              <button onClick={handleImportClick} className="px-3 py-2 bg-white hover:bg-slate-100 text-slate-700 text-sm font-medium flex items-center gap-2"><IconUpload/><span className="hidden md:inline">Import</span></button>
+            </div>
+            <input type="file" ref={fileInputRef} onChange={handleFileChange} accept=".json" className="hidden"/>
+            <button onClick={()=>openTaskModal()} className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm font-medium flex items-center gap-2 shadow-sm"><IconPlus/><span className="hidden sm:inline">เพิ่มงานใหม่</span></button>
+          </div>
+        </div>
+        <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-xs text-slate-600 bg-white p-2.5 rounded border border-slate-200 shadow-sm">
+          <span className="font-bold text-slate-800 mr-2">สัญลักษณ์ (Legend):</span>
+          {legends.map(l=>(<div key={l.id} className="flex items-center gap-2">{l.type==='milestone'?<div className="flex items-center justify-center w-4 h-4">{renderShape(l.shape,l.color,14)}</div>:<div className="w-4 h-3 rounded-sm shadow-sm" style={{backgroundColor:l.color}}></div>}<span>{l.label}</span></div>))}
+        </div>
+      </div>
+      <div className="flex-1 overflow-hidden flex flex-col bg-white">
+        <div className="flex-1 overflow-auto relative custom-scrollbar">
+          <div className="inline-block min-w-full">
+            <div className="sticky top-0 z-40 bg-white border-b border-slate-300 shadow-sm flex">
+              <div className="w-48 shrink-0 border-r border-slate-300 bg-slate-100 flex items-center justify-center font-bold text-slate-600 text-sm z-50 sticky left-0 shadow-[2px_0_5px_rgba(0,0,0,0.05)]">PHASE / STAGE</div>
+              <div className="flex flex-col flex-1" style={{width:`${timelineData.totalDays*dayWidth}px`}}>
+                <div className="flex border-b border-slate-200 h-6">{timelineData.years.map((y,i)=><div key={i} className="text-xs font-bold text-slate-600 flex items-center justify-center border-r border-slate-200 bg-slate-50" style={{width:`${y.count*dayWidth}px`}}>{y.label}</div>)}</div>
+                <div className="flex border-b border-slate-200 h-6">{timelineData.months.map((m,i)=><div key={i} className="text-[11px] font-bold text-slate-700 flex items-center justify-center border-r border-slate-200 bg-slate-100 uppercase tracking-wide overflow-hidden whitespace-nowrap" style={{width:`${m.count*dayWidth}px`}}>{m.label}</div>)}</div>
+                <div className="flex h-6">{timelineData.weeks.map((w,i)=><div key={i} className="text-[10px] text-slate-500 font-medium flex items-center justify-center border-r border-slate-200 bg-white overflow-hidden whitespace-nowrap" style={{width:`${w.count*dayWidth}px`}}>{w.label}</div>)}</div>
+              </div>
+            </div>
+            <div className="relative flex">
+              <div className="w-48 shrink-0 flex flex-col z-30 sticky left-0 shadow-[2px_0_5px_rgba(0,0,0,0.05)] bg-white">
+                {phases.map(phase=>(<div key={`left-${phase}`} style={{height:`${phaseHeights[phase]}px`}} className="border-b border-slate-200 p-4 flex items-center justify-center text-center font-bold text-sm text-slate-700 bg-white hover:bg-slate-50 transition-colors">{phase}</div>))}
+              </div>
+              <div className="relative flex-1" style={{width:`${timelineData.totalDays*dayWidth}px`}}>
+                <div className="absolute inset-0 flex pointer-events-none z-0">{timelineData.weeks.map((w,i)=><div key={i} className="border-r border-slate-100 h-full" style={{width:`${w.count*dayWidth}px`}}></div>)}</div>
+                <div className="relative z-10 flex flex-col h-full">
+                  {phases.map(phase=>(<div key={`right-${phase}`} style={{height:`${phaseHeights[phase]}px`}} className="border-b border-slate-200 relative hover:bg-slate-50/50 transition-colors">
+                    {groupedTasks[phase]?.map(task=>{
+                      const isM=task.type==='milestone'; const style=getTaskStyles(task.start,task.end,isM); if(style.display==='none')return null;
+                      const dateText=isM?formatDDMMYYYY(task.start):`${formatDDMMYYYY(task.start)} - ${formatDDMMYYYY(task.end)}`; const top=(task.row||0)*44+20; const prog=task.progress||0;
+                      return (<div key={task.id} className="absolute h-6 flex items-center group cursor-pointer" style={{left:style.left,width:style.width,top:`${top}px`,transform:isM?'translateX(-50%)':'none',zIndex:20}} onClick={()=>openTaskModal(task)} title={`${task.name}\nวันที่: ${dateText}\nคืบหน้า: ${prog}%`}>
+                        {isM?(<div className="relative z-20 flex items-center justify-center drop-shadow-md hover:scale-125 transition-transform"><span className="absolute right-full mr-3 flex items-center gap-1 whitespace-pre text-right text-xs font-semibold text-slate-800 bg-white/90 backdrop-blur-sm px-1.5 py-0.5 rounded shadow-sm border border-slate-100">{task.link&&<a href={task.link} target="_blank" rel="noopener noreferrer" onClick={e=>e.stopPropagation()} className="text-blue-600 hover:text-blue-800"><IconExternalLink/></a>}{task.name}</span>{renderShape(task.shape,task.color)}</div>)
+                        :(<div className="relative w-full h-full z-10 flex items-center"><span className="absolute right-full mr-2 flex items-center gap-1 whitespace-pre text-right text-xs font-semibold text-slate-800 bg-white/90 backdrop-blur-sm px-1.5 py-0.5 rounded shadow-sm border border-slate-100 z-30">{task.link&&<a href={task.link} target="_blank" rel="noopener noreferrer" onClick={e=>e.stopPropagation()} className="text-blue-600 hover:text-blue-800"><IconExternalLink/></a>}{task.name}</span><div className="h-full w-full rounded shadow-sm opacity-90 group-hover:opacity-100 hover:scale-y-110 transition-all min-w-[8px] overflow-hidden relative flex items-center" style={{backgroundColor:task.color}}><div className="h-full absolute left-0 top-0 bg-black/25" style={{width:`${prog}%`}}></div>{prog>0&&<span className="relative z-10 text-[9px] font-bold text-white px-1 drop-shadow-md truncate">{prog}%</span>}</div></div>)}
+                      </div>);
+                    })}
+                  </div>))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {isTaskModalOpen&&(<div className="fixed inset-0 bg-slate-900/40 z-50 flex items-center justify-center p-4 backdrop-blur-sm"><div className="bg-white rounded-xl shadow-2xl w-full max-w-lg overflow-hidden border border-slate-200 max-h-[90vh] overflow-y-auto custom-scrollbar"><div className="flex justify-between items-center p-4 border-b bg-slate-50"><h3 className="font-bold text-lg text-slate-800">{editingTaskId?'แก้ไขข้อมูลงาน':'เพิ่มงานใหม่'}</h3><button onClick={()=>setIsTaskModalOpen(false)} className="p-1 hover:bg-slate-200 rounded-full"><IconX/></button></div>
+        <form onSubmit={saveTask} className="p-5 space-y-4">
+          <div><label className="block text-sm font-semibold mb-1 text-slate-700">ชื่อกิจกรรม / Milestone *</label><textarea required value={taskForm.name} onChange={e=>setTaskForm({...taskForm,name:e.target.value})} className="w-full p-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none resize-y" rows="2"></textarea></div>
+          <div><label className="block text-sm font-semibold mb-1 text-slate-700">จัดให้อยู่ใน Phase</label><select value={taskForm.phase} onChange={e=>setTaskForm({...taskForm,phase:e.target.value})} className="w-full p-2.5 border border-slate-300 rounded-lg text-sm outline-none">{phases.map(p=><option key={p} value={p}>{p}</option>)}</select></div>
+          <div><label className="block text-sm font-semibold mb-1 text-slate-700">ลิงก์แนบ / Drilldown URL</label><input type="url" value={taskForm.link} onChange={e=>setTaskForm({...taskForm,link:e.target.value})} placeholder="https://..." className="w-full p-2.5 border border-slate-300 rounded-lg text-sm outline-none focus:border-blue-500"/></div>
+          <div className="grid grid-cols-2 gap-4">
+            <div><label className="block text-sm font-semibold mb-1 text-slate-700">ตำแหน่งแนวตั้ง (Row)</label><input type="number" min="0" required value={taskForm.row} onChange={e=>setTaskForm({...taskForm,row:parseInt(e.target.value)||0})} className="w-full p-2.5 border border-slate-300 rounded-lg text-sm outline-none"/></div>
+            {taskForm.type==='task'&&(<div><label className="block text-sm font-semibold mb-1 text-slate-700">ความคืบหน้า ({taskForm.progress}%)</label><input type="range" min="0" max="100" value={taskForm.progress} onChange={e=>setTaskForm({...taskForm,progress:parseInt(e.target.value)||0})} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600 mt-3"/></div>)}
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div><label className="block text-sm font-semibold mb-1 text-slate-700">วันที่เริ่มต้น *</label><input type="date" required value={taskForm.start} onChange={e=>{const s=e.target.value;if(taskForm.type==='milestone'||taskForm.end<s)setTaskForm({...taskForm,start:s,end:s});else setTaskForm({...taskForm,start:s});}} className="w-full p-2.5 border border-slate-300 rounded-lg text-sm outline-none"/></div>
+            <div><label className="block text-sm font-semibold mb-1 text-slate-700">วันที่สิ้นสุด</label><input type="date" required={taskForm.type!=='milestone'} disabled={taskForm.type==='milestone'} value={taskForm.end} onChange={e=>setTaskForm({...taskForm,end:e.target.value})} className="w-full p-2.5 border border-slate-300 rounded-lg text-sm outline-none disabled:bg-slate-100 disabled:text-slate-400"/></div>
+          </div>
+          <div className="p-4 bg-slate-50 border border-slate-200 rounded-lg">
+            <label className="block text-sm font-semibold mb-2 text-slate-700">รูปแบบและสัญลักษณ์</label>
+            <select value={taskForm.legendId} onChange={handleLegendSelect} className="w-full p-2 border border-slate-300 rounded text-sm mb-3 outline-none"><option value="custom">-- ปรับแต่งเอง (Custom) --</option><optgroup label="เลือกจากเทมเพลตสัญลักษณ์">{legends.map(l=><option key={l.id} value={l.id}>{l.label}</option>)}</optgroup></select>
+            {taskForm.legendId==='custom'&&(<div className="flex flex-wrap items-center gap-4 mt-2"><select value={taskForm.type} onChange={e=>setTaskForm({...taskForm,type:e.target.value,end:e.target.value==='milestone'?taskForm.start:taskForm.end})} className="p-2 border border-slate-300 rounded text-sm outline-none"><option value="task">แถบงานปกติ (Bar)</option><option value="milestone">จุด Milestone</option></select>{taskForm.type==='milestone'&&(<select value={taskForm.shape} onChange={e=>setTaskForm({...taskForm,shape:e.target.value})} className="p-2 border border-slate-300 rounded text-sm outline-none"><option value="diamond">สี่เหลี่ยม</option><option value="star">ดาว</option><option value="flag">ธง</option><option value="circle">วงกลม</option></select>)}<input type="color" value={taskForm.color} onChange={e=>setTaskForm({...taskForm,color:e.target.value})} className="w-8 h-8 p-0 border-0 rounded cursor-pointer"/></div>)}
+          </div>
+          <div className="flex justify-between pt-5 mt-2 border-t border-slate-200">
+            {editingTaskId?<button type="button" onClick={()=>{setTasks(tasks.filter(t=>t.id!==editingTaskId));setIsTaskModalOpen(false);}} className="text-red-500 px-3 py-1.5 rounded-lg text-sm font-medium flex items-center gap-1 hover:bg-red-50"><IconTrash/> ลบ</button>:<div></div>}
+            <div className="flex gap-2"><button type="button" onClick={()=>setIsTaskModalOpen(false)} className="px-5 py-2.5 border border-slate-300 rounded-lg text-sm text-slate-600 hover:bg-slate-50">ยกเลิก</button><button type="submit" className="px-5 py-2.5 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700">บันทึก</button></div>
+          </div>
+        </form>
+      </div></div>)}
+
+      {isLegendModalOpen&&(<div className="fixed inset-0 bg-slate-900/40 z-50 flex items-center justify-center p-4 backdrop-blur-sm"><div className="bg-white rounded-xl shadow-2xl w-full max-w-lg overflow-hidden border border-slate-200"><div className="flex justify-between items-center p-4 border-b bg-slate-50"><h3 className="font-bold text-lg text-slate-800 flex items-center gap-2"><IconInfo/> จัดการสัญลักษณ์</h3><button onClick={()=>setIsLegendModalOpen(false)} className="p-1 hover:bg-slate-200 rounded-full"><IconX/></button></div>
+        <div className="p-5 space-y-5">
+          <div className="space-y-2 max-h-48 overflow-y-auto pr-2 custom-scrollbar">{legends.map(l=>(<div key={l.id} className="flex justify-between items-center p-2 border border-slate-200 rounded-lg group text-sm"><div className="flex items-center gap-3">{l.type==='milestone'?<div className="w-5 h-5 flex justify-center items-center">{renderShape(l.shape,l.color,16)}</div>:<div className="w-5 h-4 rounded-sm" style={{backgroundColor:l.color}}></div>}<span className="font-medium">{l.label}</span></div><button onClick={()=>setLegends(legends.filter(x=>x.id!==l.id))} className="text-slate-400 hover:text-red-500"><IconTrash/></button></div>))}</div>
+          <div className="p-4 bg-slate-50 border border-slate-200 rounded-lg space-y-3"><h4 className="text-sm font-bold">เพิ่มสัญลักษณ์ใหม่</h4><input type="text" value={legendForm.label} onChange={e=>setLegendForm({...legendForm,label:e.target.value})} placeholder="คำอธิบาย" className="w-full p-2 border border-slate-300 rounded text-sm outline-none"/><div className="flex gap-2 items-center"><select value={legendForm.type} onChange={e=>setLegendForm({...legendForm,type:e.target.value})} className="p-2 border border-slate-300 rounded text-sm"><option value="task">แถบงาน</option><option value="milestone">Milestone</option></select>{legendForm.type==='milestone'&&(<select value={legendForm.shape} onChange={e=>setLegendForm({...legendForm,shape:e.target.value})} className="p-2 border border-slate-300 rounded text-sm"><option value="diamond">สี่เหลี่ยม</option><option value="star">ดาว</option><option value="flag">ธง</option><option value="circle">วงกลม</option></select>)}<input type="color" value={legendForm.color} onChange={e=>setLegendForm({...legendForm,color:e.target.value})} className="w-8 h-8 p-0 border-0 rounded cursor-pointer"/><button onClick={addLegend} className="ml-auto px-4 py-2 bg-slate-800 text-white rounded text-sm">เพิ่ม</button></div></div>
+        </div>
+      </div></div>)}
+
+      {isPhaseModalOpen&&(<div className="fixed inset-0 bg-slate-900/40 z-50 flex items-center justify-center p-4"><div className="bg-white rounded-xl shadow-2xl w-full max-w-sm overflow-hidden p-5"><h3 className="font-bold text-lg mb-4 flex justify-between">จัดการ Phase <button onClick={()=>setIsPhaseModalOpen(false)}><IconX/></button></h3>
+        <div className="space-y-2 mb-4 max-h-60 overflow-y-auto custom-scrollbar pr-2">{phases.map((p,idx)=>(<div key={idx} className="flex justify-between items-center p-2 bg-slate-50 border rounded text-sm group">{editingPhase===p?(<div className="flex gap-2 w-full"><input type="text" value={tempPhaseName} onChange={e=>setTempPhaseName(e.target.value)} className="w-full p-1 border rounded outline-none text-sm" autoFocus/><button onClick={saveEditPhase} className="text-green-600 hover:bg-green-50 p-1 rounded"><IconCheck/></button><button onClick={cancelEditPhase} className="text-slate-400 hover:bg-slate-100 p-1 rounded"><IconX size={16}/></button></div>):(<><span>{p}</span><div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity"><button onClick={()=>startEditPhase(p)} className="text-slate-400 hover:text-blue-500 p-1 rounded hover:bg-blue-50" title="แก้ไขชื่อ"><IconEdit/></button><button onClick={()=>setPhases(phases.filter(x=>x!==p))} className="text-slate-400 hover:text-red-500 p-1 rounded hover:bg-red-50" title="ลบ"><IconTrash/></button></div></>)}</div>))}</div>
+        <div className="flex gap-2"><input type="text" value={newPhaseName} onChange={e=>setNewPhaseName(e.target.value)} placeholder="ชื่อ Phase ใหม่" className="flex-1 p-2 border border-slate-300 rounded text-sm outline-none"/><button onClick={()=>{if(newPhaseName.trim()){setPhases([...phases,newPhaseName.trim()]);setNewPhaseName('');}}} className="px-4 py-2 bg-slate-800 text-white rounded text-sm">เพิ่ม</button></div>
+      </div></div>)}
+    </div>
+  );
+}
+
+// Lazy render Gantt when tab is clicked
+window.__renderGantt = () => {
+  const root = ReactDOM.createRoot(document.getElementById('gantt-root'));
+  root.render(<GanttApp />);
+};
+// If gantt tab is already active on load (e.g. via URL), render immediately
+if (document.getElementById('tab-gantt')?.classList.contains('active')) window.__renderGantt();
+</script>
+
+</body>
+</html>
